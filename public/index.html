@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Search Typeahead System — intelligent autocomplete powered by distributed caching and consistent hashing" />
+  <title>Search Typeahead System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Background animated orbs -->
+  <div class="bg-orb orb-1" aria-hidden="true"></div>
+  <div class="bg-orb orb-2" aria-hidden="true"></div>
+  <div class="bg-orb orb-3" aria-hidden="true"></div>
+
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+            <path d="M11 8v6M8 11h6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="logo-text">TypeAhead</span>
+        <span class="logo-badge">v1.0</span>
+      </div>
+      <nav class="header-nav">
+        <button class="nav-btn" id="btn-metrics" aria-label="View system metrics">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+          Metrics
+        </button>
+        <button class="nav-btn" id="btn-cache-debug" aria-label="View cache debug">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+          Cache Debug
+        </button>
+      </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+      <!-- Hero -->
+      <section class="hero" aria-labelledby="hero-title">
+        <h1 id="hero-title" class="hero-title">
+          Intelligent Search
+          <span class="gradient-text">Typeahead</span>
+        </h1>
+        <p class="hero-subtitle">
+          Powered by distributed caching · Consistent hashing · Trending analysis
+        </p>
+      </section>
+
+      <!-- Search Box -->
+      <section class="search-section" aria-label="Search">
+        <div class="search-container" id="search-container">
+          <div class="search-box" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-owns="suggestions-list">
+            <div class="search-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+              </svg>
+            </div>
+            <input
+              type="search"
+              id="search-input"
+              class="search-input"
+              placeholder="Search anything..."
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
+              role="searchbox"
+              aria-label="Search query"
+              aria-autocomplete="list"
+              aria-controls="suggestions-list"
+            />
+            <div class="search-meta" id="search-meta" aria-live="polite"></div>
+            <button class="search-clear" id="search-clear" aria-label="Clear search" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+            <button class="search-btn" id="search-btn" aria-label="Submit search">
+              Search
+            </button>
+          </div>
+
+          <!-- Suggestions Dropdown -->
+          <ul
+            class="suggestions-dropdown"
+            id="suggestions-list"
+            role="listbox"
+            aria-label="Search suggestions"
+            hidden
+          ></ul>
+        </div>
+      </section>
+
+      <!-- Stats Bar -->
+      <div class="stats-bar" id="stats-bar" aria-live="polite">
+        <div class="stat-pill" id="stat-source">
+          <span class="stat-dot" aria-hidden="true"></span>
+          <span class="stat-label">Waiting...</span>
+        </div>
+        <div class="stat-pill" id="stat-latency">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span class="stat-label">—</span>
+        </div>
+        <div class="stat-pill" id="stat-count">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" aria-hidden="true">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span class="stat-label">—</span>
+        </div>
+      </div>
+
+      <!-- Panels Row -->
+      <div class="panels-row">
+        <!-- Trending Panel -->
+        <section class="panel trending-panel" aria-labelledby="trending-title">
+          <div class="panel-header">
+            <h2 id="trending-title" class="panel-title">
+              <span class="panel-icon" aria-hidden="true">🔥</span>
+              Trending Now
+            </h2>
+            <span class="panel-badge" id="trending-badge">Live</span>
+          </div>
+          <div class="panel-body">
+            <ul class="trending-list" id="trending-list" aria-label="Trending searches">
+              <li class="trending-placeholder">Loading trending searches...</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- Recent Searches Panel -->
+        <section class="panel recent-panel" aria-labelledby="recent-title">
+          <div class="panel-header">
+            <h2 id="recent-title" class="panel-title">
+              <span class="panel-icon" aria-hidden="true">🕐</span>
+              Your Recent Searches
+            </h2>
+            <button class="panel-action" id="clear-recent" aria-label="Clear recent searches">Clear</button>
+          </div>
+          <div class="panel-body">
+            <ul class="recent-list" id="recent-list" aria-label="Recent searches">
+              <li class="recent-placeholder">No recent searches yet</li>
+            </ul>
+          </div>
+        </section>
+      </div>
+
+      <!-- Cache Debug Panel (collapsible) -->
+      <details class="panel debug-panel" id="cache-debug-panel">
+        <summary class="panel-header debug-summary" aria-label="Toggle cache debug panel">
+          <h2 class="panel-title">
+            <span class="panel-icon" aria-hidden="true">⚙️</span>
+            Cache Debug
+          </h2>
+          <span class="debug-chevron" aria-hidden="true">▼</span>
+        </summary>
+        <div class="panel-body debug-body" id="debug-body">
+          <p class="debug-hint">Type a prefix and press <kbd>Tab</kbd> to inspect its cache node assignment.</p>
+          <div class="debug-grid" id="debug-grid">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </details>
+
+      <!-- Metrics Panel (hidden by default) -->
+      <div class="modal-overlay" id="metrics-overlay" hidden aria-modal="true" role="dialog" aria-labelledby="metrics-title">
+        <div class="modal">
+          <div class="modal-header">
+            <h2 id="metrics-title" class="modal-title">System Metrics</h2>
+            <button class="modal-close" id="close-metrics" aria-label="Close metrics panel">✕</button>
+          </div>
+          <div class="modal-body" id="metrics-body">
+            <div class="loading-shimmer">Loading metrics...</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>HLD101 Assignment — Search Typeahead System &nbsp;·&nbsp; Distributed Cache · Consistent Hashing · Trending Scoring · Batch Writes</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
